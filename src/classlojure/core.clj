@@ -60,11 +60,6 @@
         method (name class-method)]
     `(invoke-in* ~cl ~class ~method ~@args)))
 
-(defn printable? [object]
-  (or (nil? object)
-      (and (class object)
-           (.getClassLoader (class object)))))
-
 (defn eval-in* [cl form & objects]
   (let [print-read-eval (fn [form]
                           (->> (pr-str form)
@@ -78,12 +73,8 @@
                                      (into-array (repeat (count objects) Object)))
                          (.invoke result-or-fn (to-array objects)))
                      result-or-fn)]
-        (if-not (printable? result)
-          result
-          (let [string (invoke-in cl clojure.lang.RT/printString [Object] result)]
-            (try (read-string string)
-                 (catch RuntimeException e
-                   string))))))))
+
+        result))))
 
 (defn eval-in
   "Eval the given form in a separate classloader. If objects are passed after form, then the form
